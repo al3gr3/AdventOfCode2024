@@ -5,35 +5,23 @@ var line = File.ReadAllText("TextFile1.txt");
 Console.WriteLine(First(line));
 Console.WriteLine(Second(line));
 
-int First(string line)
-{
-    var regex = new Regex(@"mul\(\d+,\d+\)");
-    var result = 0;
-    foreach (Match match in regex.Matches(line))
-        result += ParseMul(match.Value);
-    return result;
-}
+int First(string line) => new Regex(@"mul\((\d+),(\d+)\)").Matches(line).Cast<Match>().Sum(ParseMulRegex);
 
-int ParseMul(string value)
-{
-    var splits = value.Split(new[] { "mul(", ",", ")" }, StringSplitOptions.RemoveEmptyEntries);
-    return int.Parse(splits[0]) * int.Parse(splits[1]);
-}
+int ParseMulRegex(Match match) => int.Parse(match.Groups[1].Value) * int.Parse(match.Groups[2].Value);
 
 int Second(string line)
 {
-    var regex = new Regex(@"mul\(\d+,\d+\)|do\(\)|don't\(\)");
+    var regex = new Regex(@"mul\((\d+),(\d+)\)|do\(\)|don't\(\)");
     var result = 0;
-    var isOn = true;
+    var isEnabled = true;
     foreach (Match match in regex.Matches(line))
     {
         if (match.Value == @"do()")
-            isOn = true;
+            isEnabled = true;
         else if (match.Value == @"don't()")
-            isOn = false;
-        else if (isOn)
-            result += ParseMul(match.Value);
+            isEnabled = false;
+        else if (isEnabled)
+            result += ParseMulRegex(match);
     }
-        
     return result;
 }

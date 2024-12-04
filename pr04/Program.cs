@@ -3,18 +3,17 @@
 Console.WriteLine(First());
 Console.WriteLine(Second());
 
-
 int Second()
 {
     var result = 0;
     for (var x = 0; x < lines[0].Length; x++)
         for (var y = 0; y < lines.Length; y++)
             if (lines[y][x] == 'A')
-                result += WordsWithAInTheMiddle(new Point { X = x, Y = y }).Count(w => w == "MAS" || w == "SAM") == 2 ? 1 : 0;
+                result += XShapedWords(new Point { X = x, Y = y }).All(w => w == "MAS" || w == "SAM") ? 1 : 0;
     return result;
 }
 
-IEnumerable<string> WordsWithAInTheMiddle(Point start)
+IEnumerable<string> XShapedWords(Point start)
 {
     var directions = new[]
     {
@@ -23,7 +22,7 @@ IEnumerable<string> WordsWithAInTheMiddle(Point start)
     }.ToList();
 
     foreach (var dir in directions)
-        yield return FindLetter(start.Clone().Add(dir.Clone().Multiply(-1))) + FindLetter(start) + FindLetter(start.Clone().Add(dir));
+        yield return FindLetter(start.AddClone(dir.MultiplyClone(-1))) + FindLetter(start) + FindLetter(start.AddClone(dir));
 }
 
 IEnumerable<string> WordsStartingWithX(Point start)
@@ -41,7 +40,6 @@ IEnumerable<string> WordsStartingWithX(Point start)
         new Point { Y = -1, X = -1 },
     }.ToList();
 
-
     foreach (var dir in directions)
     {
         var t = start.Clone();
@@ -54,10 +52,9 @@ IEnumerable<string> WordsStartingWithX(Point start)
         }
         yield return s;
     }
-
 }
 
-string FindLetter(Point t) => 0 <= t.X && t.X < lines[0].Length && 0 <= t.Y && t.Y < lines.Length ? "" + lines[t.Y][t.X] : "";
+string FindLetter(Point t) => 0 <= t.X && t.X < lines[0].Length && 0 <= t.Y && t.Y < lines.Length ? $"{lines[t.Y][t.X]}" : "";
 
 int First()
 {
@@ -81,7 +78,16 @@ class Point
         return this;
     }
 
+    internal Point AddClone(Point point) => this.Clone().Add(point);
+
     internal Point Clone() => new Point { X = this.X, Y = this.Y };
 
-    internal Point Multiply(int i) => new Point { X = this.X * i, Y = this.Y * i };
+    internal Point Multiply(int i)
+    {
+        this.X *= i;
+        this.Y *= i;
+        return this;
+    }
+
+    internal Point MultiplyClone(int i) => this.Clone().Multiply(i);
 }

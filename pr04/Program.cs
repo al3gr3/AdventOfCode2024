@@ -9,23 +9,23 @@ int Second()
     for (var x = 0; x < lines[0].Length; x++)
         for (var y = 0; y < lines.Length; y++)
             if (lines[y][x] == 'A')
-                result += XShapedWords(new Point { X = x, Y = y }).All(w => w == "MAS" || w == "SAM") ? 1 : 0;
+                result += XShapedWords3Letter(new Point { X = x, Y = y }).All(w => w == "MAS" || w == "SAM") ? 1 : 0;
     return result;
 }
 
-IEnumerable<string> XShapedWords(Point start)
+IEnumerable<string> XShapedWords3Letter(Point start)
 {
     var directions = new[]
     {
         new Point { Y = 1, X = 1 },
         new Point { Y = 1, X = -1 },
-    }.ToList();
+    };
 
     foreach (var dir in directions)
         yield return FindLetter(start.AddClone(dir.MultiplyClone(-1))) + FindLetter(start) + FindLetter(start.AddClone(dir));
 }
 
-IEnumerable<string> WordsStartingWithX(Point start)
+IEnumerable<string> Words4LetterStartingWith(Point start)
 {
     var directions = new[]
     {
@@ -38,7 +38,7 @@ IEnumerable<string> WordsStartingWithX(Point start)
         new Point { Y = 1, X = -1 },
         new Point { Y = -1, X = 1 },
         new Point { Y = -1, X = -1 },
-    }.ToList();
+    };
 
     foreach (var dir in directions)
     {
@@ -54,7 +54,11 @@ IEnumerable<string> WordsStartingWithX(Point start)
     }
 }
 
-string FindLetter(Point t) => 0 <= t.X && t.X < lines[0].Length && 0 <= t.Y && t.Y < lines.Length ? $"{lines[t.Y][t.X]}" : "";
+string FindLetter(Point t) => 
+    0 <= t.X && t.X < lines[0].Length && 
+    0 <= t.Y && t.Y < lines.Length 
+    ? $"{lines[t.Y][t.X]}" 
+    : "";
 
 int First()
 {
@@ -62,7 +66,7 @@ int First()
     for (var x = 0; x < lines[0].Length; x++)
         for (var y = 0; y < lines.Length; y++)
             if (lines[y][x] == 'X')
-                result += WordsStartingWithX(new Point { X = x, Y = y }).Count(w => w == "XMAS");
+                result += Words4LetterStartingWith(new Point { X = x, Y = y }).Count(w => w == "XMAS");
     return result;
 }
 

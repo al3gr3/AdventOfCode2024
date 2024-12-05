@@ -11,11 +11,7 @@ Console.WriteLine(second);
 
 int Compare(string? x, string? y) => rules.Any(rule => x == rule[0] && y == rule[1]) ? 1 : -1;
 
-string[] Sort(string[] sheets)
-{
-    Array.Sort(sheets, Compare);
-    return sheets;
-}
+string[] Sort(string[] sheets) => sheets.Order(Comparer<string>.Create(Compare)).ToArray();
 
 int Middle(string[] sheets) => int.Parse(sheets[(int)(sheets.Length / 2)]);
 
@@ -23,7 +19,5 @@ bool IsCorrect(string[] sheets) => rules.All(rule =>
 {
     var index1 = Array.IndexOf(sheets, rule[0]);
     var index2 = Array.IndexOf(sheets, rule[1]);
-
-    var isOkRule = index1 == -1 || index2 == -1 || index1 < index2;
-    return isOkRule;
+    return index1 == -1 || index2 == -1 || index1 < index2;
 });

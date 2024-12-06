@@ -12,19 +12,24 @@ var pos = FindStart();
 
 First(pos);
 
-var second = 0;
-for (int x = 0; x < lines[0].Length; x++)
-    for (int y = 0; y < lines.Length; y++)
-        if (lines[y][x] == '.')
-        {
-            lines[y] = lines[y][..x] + '#' + lines[y][(x + 1)..];
-            if (IsWithCycle(pos))
-                second++;
-            lines[y] = lines[y][..x] + '.' + lines[y][(x + 1)..];
-        }
+Second(pos);
 
-Console.WriteLine(second);
-            
+void Second(Point pos)
+{
+    var second = 0;
+    for (int x = 0; x < lines[0].Length; x++)
+        for (int y = 0; y < lines.Length; y++)
+            if (lines[y][x] == '.')
+            {
+                lines[y] = lines[y][..x] + '#' + lines[y][(x + 1)..];
+                if (IsWithCycle(pos))
+                    second++;
+                lines[y] = lines[y][..x] + '.' + lines[y][(x + 1)..];
+            }
+
+    Console.WriteLine(second);
+}
+
 bool InBounds(Point p) => 0 <= p.X && p.X < lines[0].Length && 0 <= p.Y && p.Y < lines.Length;
 
 Point FindStart()
@@ -40,23 +45,7 @@ Point FindStart()
 void First(Point pos)
 {
     var visited = Enumerable.Range(0, lines.Length).Select(y => Enumerable.Range(0, lines[0].Length).Select(x => -1).ToArray()).ToArray();
-
-    var dirIndex = 0;
-
-    while (true)
-    {
-        visited[pos.Y][pos.X] = dirIndex;
-        var newPos = pos.AddClone(directions[dirIndex]);
-        if (InBounds(newPos))
-        {
-            if (lines[newPos.Y][newPos.X] == '#')
-                dirIndex = (dirIndex + 1) % 4;
-            else
-                pos = newPos;
-        }
-        else
-            break;
-    }
+    Walk(pos, visited);
 
     var first = visited.Sum(l => l.Count(c => c > -1));
     Console.WriteLine(first);
@@ -65,16 +54,14 @@ void First(Point pos)
 bool IsWithCycle(Point pos)
 {
     var visited = Enumerable.Range(0, lines.Length).Select(y => Enumerable.Range(0, lines[0].Length).Select(x => -1).ToArray()).ToArray();
+    return Walk(pos, visited);
+}
 
+bool Walk(Point pos, int[][] visited)
+{
     var dirIndex = 0;
-    
-    var count = 0;
     while (true)
     {
-        count++;
-        //if (count > lines[0].Length * lines.Length)
-        //    return true;
-
         if (visited[pos.Y][pos.X] == -1)
             visited[pos.Y][pos.X] = dirIndex;
         var newPos = pos.AddClone(directions[dirIndex]);

@@ -17,10 +17,10 @@ for (int x = 0; x < lines[0].Length; x++)
     for (int y = 0; y < lines.Length; y++)
         if (lines[y][x] == '.')
         {
-            lines[y] = lines[y].Substring(0, x) + '#' + lines[y].Substring(x + 1);
+            lines[y] = lines[y][..x] + '#' + lines[y][(x + 1)..];
             if (IsWithCycle(pos))
                 second++;
-            lines[y] = lines[y].Substring(0, x) + '.' + lines[y].Substring(x + 1);
+            lines[y] = lines[y][..x] + '.' + lines[y][(x + 1)..];
         }
 
 Console.WriteLine(second);
@@ -39,7 +39,7 @@ Point FindStart()
 
 void First(Point pos)
 {
-    var visited = Enumerable.Range(0, lines.Length).Select(x => Enumerable.Range(0, lines[0].Length).Select(xx => -1).ToArray()).ToArray();
+    var visited = Enumerable.Range(0, lines.Length).Select(y => Enumerable.Range(0, lines[0].Length).Select(x => -1).ToArray()).ToArray();
 
     var dirIndex = 0;
 
@@ -64,7 +64,7 @@ void First(Point pos)
 
 bool IsWithCycle(Point pos)
 {
-    var visited = Enumerable.Range(0, lines.Length).Select(x => Enumerable.Range(0, lines[0].Length).Select(xx => -1).ToArray()).ToArray();
+    var visited = Enumerable.Range(0, lines.Length).Select(y => Enumerable.Range(0, lines[0].Length).Select(x => -1).ToArray()).ToArray();
 
     var dirIndex = 0;
     
@@ -72,15 +72,16 @@ bool IsWithCycle(Point pos)
     while (true)
     {
         count++;
-        if (count > lines[0].Length * lines.Length * 3)
-            return true;
-        visited[pos.Y][pos.X] = dirIndex;
+        //if (count > lines[0].Length * lines.Length)
+        //    return true;
+
+        if (visited[pos.Y][pos.X] == -1)
+            visited[pos.Y][pos.X] = dirIndex;
         var newPos = pos.AddClone(directions[dirIndex]);
         if (InBounds(newPos))
         {
-            if (visited[newPos.Y][newPos.X] > -1 && (visited[newPos.Y][newPos.X] == dirIndex))
+            if (visited[newPos.Y][newPos.X] == dirIndex)
                 return true;
-
             if (lines[newPos.Y][newPos.X] == '#')
                 dirIndex = (dirIndex + 1) % 4;
             else

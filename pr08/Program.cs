@@ -6,7 +6,7 @@ for (int x = 0; x < lines[0].Length; x++)
         if (lines[y][x] != '.')
             antennas.Add(new Point { X = x, Y = y, C = lines[y][x] });
 
-First();
+Second();
 
 bool InBounds(Point p) => 0 <= p.X && p.X < lines[0].Length && 0 <= p.Y && p.Y < lines.Length;
 
@@ -29,6 +29,38 @@ void First()
 
                     if (InBounds(ll))
                         antinodes[ll.Y][ll.X] = true;
+                }
+    });
+
+    Console.WriteLine(antinodes.Sum(y => y.Count(c => c)));
+}
+
+void Second()
+{
+    var antinodes = Enumerable.Range(0, lines.Length).Select(y => Enumerable.Range(0, lines[0].Length).Select(x => false).ToArray()).ToArray();
+
+    antennas.GroupBy(p => p.C).ToList().ForEach(grp =>
+    {
+        foreach (var left in grp)
+            foreach (var right in grp)
+                if (!left.IsEqual(right))
+                {
+                    var vector = left.MultiplyClone(-1).AddClone(right);
+
+                    var rr = right.Clone();
+                    while (InBounds(rr))
+                    {
+                        antinodes[rr.Y][rr.X] = true;
+                        rr = rr.AddClone(vector);
+                    }
+
+                    var ll = left.Clone();
+                    while (InBounds(ll))
+                    {
+                        antinodes[ll.Y][ll.X] = true;
+                        ll = ll.AddClone(vector.MultiplyClone(-1));
+
+                    }
                 }
     });
 

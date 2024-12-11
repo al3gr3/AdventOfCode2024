@@ -1,23 +1,15 @@
 ﻿var stones = File.ReadAllLines("TextFile1.txt").First().Split(' ');
-
 var dict = new Dictionary<string, long>();
-Console.WriteLine(f(stones, 0));
+Console.WriteLine(f(stones, 0, 25));
+Console.WriteLine(f(stones, 0, 75));
 
-foreach (var step in Enumerable.Range(1, 25))
-    stones = stones.SelectMany(Blink).ToArray();
-Console.WriteLine(stones.Length);
-
-long f(IEnumerable<string> sts, int level)
-{
-    if (level == 75)
-        return sts.Count();
-
-    return sts.GroupBy(x => x).Sum(grp =>
+long f(IEnumerable<string> sts, int level, int maxLevel) => level == maxLevel
+    ? sts.Count()
+    : sts.Sum(st =>
     {
-        var key = $"{level}|{grp.Key}";
-        return grp.Count() * (dict.ContainsKey(key) ? dict[key] : (dict[key] = f(Blink(grp.Key), level + 1)));
+        var key = $"{maxLevel - level}|{st}";
+        return dict.ContainsKey(key) ? dict[key] : (dict[key] = f(Blink(st), level + 1, maxLevel));
     });
-}
 
 IEnumerable<string> Blink(string x)
 {

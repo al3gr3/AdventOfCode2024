@@ -40,7 +40,7 @@ int FindCorners(Point next, char c)
     foreach (var diagIndex in new[] { 1, 3, 5, 7 })
     {
         var diag = next.AddClone(Point.AllDirections[diagIndex]);
-        if (!InBounds(diag) || !new[] { c, ToLower(c) }.Contains(lines[diag.Y][diag.X]))
+        if (!IsSame(diag, c))
         {
             // outer
             var others = new[] { 1, -1 }
@@ -56,17 +56,16 @@ int FindCorners(Point next, char c)
             if (others == 2 || others2 == 2)
                 corners++;
         }
-
-        /*
-        AAAAAA
-        AAABBA
-        AAABBA
-        ABBAAA
-        ABBAAA
-        AAAAAA
-        */
-        if (IsSame(diag, c))
+        else
         {
+            /*
+            AAAAAA
+            AAABBA
+            AAABBA
+            ABBAAA
+            ABBAAA
+            AAAAAA
+            */
             var others2 = new[] { 1, -1 }
                 .Select(x => (x + diagIndex + 8) % 8)
                 .Select(i => next.AddClone(Point.AllDirections[i]))

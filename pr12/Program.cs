@@ -3,13 +3,13 @@
 var result = 0;
 for (int x = 0; x < lines[0].Length; x++)
     for (int y = 0; y < lines.Length; y++)
-        result += Flood2(new Point { X = x, Y = y });
+        result += Flood(new Point { X = x, Y = y }, FindCorners);
 
 Console.WriteLine(result);
 
-int Flood(Point start)
+int Flood(Point start, Func<Point, char, int> findCoef)
 {
-    var fences = 0;
+    var coef = 0;
     var area = 0;
     var queue = new Queue<Point>();
     queue.Enqueue(start);
@@ -20,79 +20,65 @@ int Flood(Point start)
         if (ToLower(c) == c)
             continue;
         foreach (var nextdir in Point.OrtoDirections.Select(next.AddClone))
-        {
             if (InBounds(nextdir) && lines[nextdir.Y][nextdir.X] == c)
                 queue.Enqueue(nextdir);
-            
-            if (!InBounds(nextdir) || !new[] { c, ToLower(c)}.Contains(lines[nextdir.Y][nextdir.X]))
-                fences++;
-        }
+
+        coef += findCoef(next, c);
+
         lines[next.Y] = lines[next.Y][..next.X] + ToLower(c) + lines[next.Y][(next.X + 1)..];
         area++;
     }
-    return fences * area;
+    return coef * area;
 }
 
-int Flood2(Point start)
+int FindFences(Point next, char c) => 
+    Point.OrtoDirections.Select(next.AddClone).Count(nextdir => !IsSame(nextdir, c));
+
+int FindCorners(Point next, char c)
 {
     var corners = 0;
-    var area = 0;
-    var queue = new Queue<Point>();
-    queue.Enqueue(start);
-    while (queue.Any())
+    foreach (var diagIndex in new[] { 1, 3, 5, 7 })
     {
-        var next = queue.Dequeue();
-        var c = lines[next.Y][next.X];
-        if (ToLower(c) == c)
-            continue;
-        foreach (var nextdir in Point.OrtoDirections.Select(next.AddClone))
+        var diag = next.AddClone(Point.AllDirections[diagIndex]);
+        if (!InBounds(diag) || !new[] { c, ToLower(c) }.Contains(lines[diag.Y][diag.X]))
         {
-            if (InBounds(nextdir) && lines[nextdir.Y][nextdir.X] == c)
-                queue.Enqueue(nextdir);
+            // outer
+            var others = new[] { 1, -1 }
+                .Select(x => (x + diagIndex + 8) % 8)
+                .Select(i => next.AddClone(Point.AllDirections[i]))
+                .Count(p => !IsSame(p, c));
+
+            // inner
+            var others2 = new[] { 1, -1 }
+                .Select(x => (x + diagIndex + 8) % 8)
+                .Select(i => next.AddClone(Point.AllDirections[i]))
+                .Count(p => IsSame(p, c));
+            if (others == 2 || others2 == 2)
+                corners++;
         }
-        foreach(var diagIndex in new[] { 1, 3, 5, 7 })
+
+        /*
+        AAAAAA
+        AAABBA
+        AAABBA
+        ABBAAA
+        ABBAAA
+        AAAAAA
+        */
+        if (IsSame(diag, c))
         {
-            var diag = next.AddClone(Point.AllDirections[diagIndex]);
-            if (!InBounds(diag) || !new[] { c, ToLower(c) }.Contains(lines[diag.Y][diag.X]))
-            {
-                // outer
-                var others = new[] { 1, -1 }
-                    .Select(x => (x + diagIndex + 8) % 8)
-                    .Select(i => next.AddClone(Point.AllDirections[i]))
-                    .Count(p => !InBounds(p) || !new[] { c, ToLower(c) }.Contains(lines[p.Y][p.X]));
-
-                // inner
-                var others2 = new[] { 1, -1 }
-                    .Select(x => (x + diagIndex + 8) % 8)
-                    .Select(i => next.AddClone(Point.AllDirections[i]))
-                    .Count(p => InBounds(p) && new[] { c, ToLower(c) }.Contains(lines[p.Y][p.X]));
-                if (others == 2 || others2 == 2)
-                    corners++;
-            }
-
-            /*
-            AAAAAA
-            AAABBA
-            AAABBA
-            ABBAAA
-            ABBAAA
-            AAAAAA
-            */
-            if (InBounds(diag) && new[] { c, ToLower(c) }.Contains(lines[diag.Y][diag.X]))
-            {
-                var others2 = new[] { 1, -1 }
-                    .Select(x => (x + diagIndex + 8) % 8)
-                    .Select(i => next.AddClone(Point.AllDirections[i]))
-                    .Count(p => InBounds(p) && !new[] { c, ToLower(c) }.Contains(lines[p.Y][p.X]));
-                if (others2 == 2)
-                    corners++;
-            }
+            var others2 = new[] { 1, -1 }
+                .Select(x => (x + diagIndex + 8) % 8)
+                .Select(i => next.AddClone(Point.AllDirections[i]))
+                .Count(p => InBounds(p) && !new[] { c, ToLower(c) }.Contains(lines[p.Y][p.X]));
+            if (others2 == 2)
+                corners++;
         }
-        lines[next.Y] = lines[next.Y][..next.X] + ToLower(c) + lines[next.Y][(next.X + 1)..];
-        area++;
     }
-    return corners * area;
+    return corners;
 }
+
+bool IsSame(Point p, char c) => InBounds(p) && new[] { c, ToLower(c) }.Contains(lines[p.Y][p.X]);
 
 char ToLower(char c) => c.ToString().ToLower().First();
 

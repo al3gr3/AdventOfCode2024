@@ -4,19 +4,7 @@ var robots = lines.Select(ParseRobot).ToList();
 var dim = new Point { X = 101, Y = 103 };
 var center = new Point { X = dim.X / 2, Y = dim.Y / 2 };
 
-foreach (var robot in robots)
-{
-    robot.Pos.Add(dim.MultiplyClone(100000)).Add(robot.Vector.MultiplyClone(100));
-    robot.Pos.X %= dim.X;
-    robot.Pos.Y %= dim.Y;
-}
-
-var groups = robots.GroupBy(x => x.Quadrant(center)).Where(grp => new[] { 1, 3, 5, 7 }.Contains(grp.Key))
-    .Select(grp => grp.Count());
-
-var result = groups.Aggregate(1, (s, n) => s * n);
-
-Console.WriteLine(result);
+First();
 
 Robot ParseRobot(string value)
 {
@@ -29,6 +17,56 @@ Robot ParseRobot(string value)
     };
 }
 
+void Second()
+{
+    var i = 0;
+    while (true)
+    {
+        i++;
+        foreach (var robot in robots)
+        {
+            robot.Pos.Add(dim.MultiplyClone(100000)).Add(robot.Vector);
+            robot.Pos.X %= dim.X;
+            robot.Pos.Y %= dim.Y;
+        }
+        Print(robots);
+        Console.WriteLine(i);
+        Thread.Sleep(30);
+    }
+}
+
+void Print(List<Robot> robots)
+{
+    var m = Enumerable.Range(0, dim.Y).Select(y => Enumerable.Range(0, dim.X).Select(x => 0).ToArray()).ToArray();
+    foreach (var robot in robots)
+        m[robot.Pos.Y][robot.Pos.X]++;
+
+    for (var y = 0; y < dim.Y; y++)
+    {
+        var s = "";
+        for (var x = 0; x < dim.X; x++)
+            s += m[y][x] > 0 ? '*' : ' ';
+        Console.WriteLine(s);
+    }
+}
+
+void First()
+{
+    foreach (var robot in robots)
+    {
+        robot.Pos.Add(dim.MultiplyClone(100000)).Add(robot.Vector.MultiplyClone(100));
+        robot.Pos.X %= dim.X;
+        robot.Pos.Y %= dim.Y;
+    }
+
+    var groups = robots.GroupBy(x => x.Quadrant(center)).Where(grp => new[] { 1, 3, 5, 7 }.Contains(grp.Key))
+        .Select(grp => grp.Count());
+
+    var result = groups.Aggregate(1, (s, n) => s * n);
+
+    Console.WriteLine(result);
+}
+
 class Robot
 {
     public Point Pos;
@@ -36,14 +74,15 @@ class Robot
 
     public int Quadrant(Point center)
     {
-        var cmp = new Point 
-        { 
-            X = this.Pos.X.CompareTo(center.X), 
-            Y = this.Pos.Y.CompareTo(center.Y) 
+        var cmp = new Point
+        {
+            X = this.Pos.X.CompareTo(center.X),
+            Y = this.Pos.Y.CompareTo(center.Y)
         };
 
         if (cmp.IsEqual(new Point { X = 0, Y = 0 }))
             return 0;
+
         for (int i = 0; i < Point.AllDirections.Length; i++)
             if (cmp.IsEqual(Point.AllDirections[i]))
                 return i;

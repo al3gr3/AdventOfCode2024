@@ -52,10 +52,9 @@ var dict = new Dictionary<char, string>
 lines = lines.Select(l => string.Concat(l.Select(c => dict[c]))).ToList();
 
 var fish = FindFish(lines);
-Print(lines);
+
 foreach (var move in moves)
 {
-    //Console.WriteLine(move);
     var dir = FindDirection(move);
     var n = fish.AddClone(dir);
     if (lines[n.Y][n.X] == '.')
@@ -121,15 +120,13 @@ foreach (var move in moves)
             }
         }
     }
-    //Print(lines);
 }
-
 
 Console.WriteLine(Count(lines));
 
 void SetChar(Point p, char c) => lines[p.Y] = lines[p.Y][..p.X] + c + lines[p.Y][(p.X + 1)..];
 
-Point FindDirection(char c) => Point.OrtoDirections["^>v<".IndexOf(c)];
+Point FindDirection(char c) => Point.OrtoDirection(c);
 
 void First()
 {
@@ -167,6 +164,8 @@ class Point
 {
     internal int X;
     internal int Y;
+
+    internal static Point OrtoDirection(char c) => OrtoDirections["^>v<".IndexOf(c)];
 
     internal static Point[] OrtoDirections => new[]
     {

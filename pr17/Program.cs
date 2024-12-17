@@ -1,8 +1,8 @@
 ﻿var lines = File.ReadAllLines("TextFile1.txt");
-var regA = decimal.Parse(lines[0].Split(' ').Last());
-var regB = decimal.Parse(lines[1].Split(' ').Last());
-var regC = decimal.Parse(lines[2].Split(' ').Last());
-List<int> output = new List<int>();
+var regA = long.Parse(lines[0].Split(' ').Last());
+var regB = long.Parse(lines[1].Split(' ').Last());
+var regC = long.Parse(lines[2].Split(' ').Last());
+var output = new List<int>();
 var instructions = new[] { adv, bxl, bst, jnz, bxc, @out, bdv, cdv, };
 var program = lines[4].Split(' ').Last().Split(',').Select(int.Parse).ToArray();
 
@@ -33,7 +33,7 @@ long Second()
     throw new Exception();
 }
 
-string  Go(decimal a)
+string  Go(long a)
 {
     regA = a;
     regB = 0;
@@ -51,8 +51,8 @@ string  Go(decimal a)
     return res;
 }
 
-decimal Combo(int operand) => new[] { 0, 1, 2, 3, regA, regB, regC }[operand];
-decimal DivRegA(int operand) => (long) (regA / (int)Math.Pow(2, (double)Combo(operand)));
+long Combo(int operand) => new[] { 0, 1, 2, 3, regA, regB, regC }[operand];
+long DivRegA(int operand) => (long) (regA / (int)Math.Pow(2, (double)Combo(operand)));
 
 // 2,4,    1,1,    7,5,    4,0,      0,3,     1,6,     5,5,     3,0
 
@@ -113,6 +113,3 @@ void cdv(int operand)
 {
     regC = DivRegA(operand);
 }
-
-
-decimal Aggr(int[] regABytes) => regABytes.Reverse().Aggregate((decimal)0, (s, n) => s * 8 + n);

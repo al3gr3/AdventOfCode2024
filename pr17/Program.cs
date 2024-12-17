@@ -19,7 +19,7 @@ long Second()
     while (queue.Any())
     {
         var next = queue.Dequeue();
-        for (int i = 8 * 8 * 8; i < 8 * 8 * 8 * 8; i++)
+        for (var i = 8 * 8 * 8; i < 8 * 8 * 8 * 8; i++)
         {
             var p = i + next * 8 * 8 * 8 * 8;
             var s = Go(p);
@@ -52,10 +52,10 @@ string  Go(long a)
 }
 
 long Combo(int operand) => new[] { 0, 1, 2, 3, regA, regB, regC }[operand];
-long DivRegA(int operand) => (long) (regA / (int)Math.Pow(2, (double)Combo(operand)));
+long DivRegA(int operand) => regA / (int)Math.Pow(2, (double)Combo(operand));
 
+/*
 // 2,4,    1,1,    7,5,    4,0,      0,3,     1,6,     5,5,     3,0
-
 // regB = (regA % 8) ^ 1                    // 2,4 1,1  
 // regB ^= regA / (2 ** regB)               // 7,5 4,0
 // regA /= 8                                // 0,3
@@ -64,6 +64,7 @@ long DivRegA(int operand) => (long) (regA / (int)Math.Pow(2, (double)Combo(opera
 // if (regA != 0) goto start                // 3,0
 
 // regB = (regA % 8) ^ 7 ^ (regA / (2 ** ((regA % 8) ^ 1)))
+*/
 
 // 0
 void adv(int operand)
@@ -74,7 +75,7 @@ void adv(int operand)
 // 1
 void bxl(int operand)
 {
-    regB = (long)regB ^ operand;
+    regB ^= operand;
 }
 
 // 2
@@ -93,7 +94,7 @@ void jnz(int operand)
 // 4
 void bxc(int _)
 {
-    regB = (long)regB ^ (long)regC;
+    regB ^= regC;
 }
 
 // 5

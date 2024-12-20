@@ -9,30 +9,11 @@ var start = Find('S');
 var end = Find('E');
 
 Dijkstra();
-var initial = dist[end.Y][end.X];
 
-Console.WriteLine(initial);
+Console.WriteLine("Dijkstra done");
 
-var wins = new List<int>();
-for (var y = 0; y < height; y++)
-    for (var x = 0; x < height; x++)
-    {
-        var u = new Point { X = x, Y = y };
-        if (dist[u.Y][u.X] == int.MaxValue)
-            continue;
-        var newPoses = Point.OrtoDirections.Select(d => u.AddClone(d.MultiplyClone(2))).Where(pp => InBounds(pp) && lines[pp.Y][pp.X] != '#').ToArray();
-        foreach (var newPos in newPoses)
-        {
-            if (dist[newPos.Y][newPos.X] == int.MaxValue)
-                continue;
-            var diff = Math.Abs(dist[u.Y][u.X] - dist[newPos.Y][newPos.X]);
-            if (diff > 2)
-            {
-                wins.Add(diff - 2);
-            }
-        }
-    }
-Console.WriteLine(wins.Count(x => x >= 100) / 2);
+FindCheats(2);
+FindCheats(20);
 
 bool InBounds(Point p) => 0 <= p.X && p.X < lines[0].Length && 0 <= p.Y && p.Y < lines.Length;
 
@@ -71,6 +52,35 @@ void Dijkstra()
     }
 }
 
+void FindCheats(int pico)
+{
+    var wins = new List<int>();
+    for (var y = 0; y < height; y++)
+        for (var x = 0; x < height; x++)
+        {
+            var u = new Point { X = x, Y = y };
+            if (dist[u.Y][u.X] == int.MaxValue)
+                continue;
+
+            for (var yy = 0; yy < height; yy++)
+                for (var xx = 0; xx < height; xx++)
+                {
+                    var newPos = new Point { X = xx, Y = yy };
+                    if (dist[newPos.Y][newPos.X] == int.MaxValue)
+                        continue;
+                    var distance = newPos.Distance(u);
+                    if (distance <= pico)
+                    {
+                        var diff = Math.Abs(dist[u.Y][u.X] - dist[newPos.Y][newPos.X]);
+                        if (diff > distance)
+                            wins.Add(diff - distance);
+                    }
+                }
+        }
+
+    //wins.Where(x => x >= 50).GroupBy(x => x).OrderBy(grp => grp.Key).ToList().ForEach(grp => Console.WriteLine($"There are {grp.Count() / 2} cheats that save {grp.Key} picoseconds"));
+    Console.WriteLine(wins.Count(x => x >= 100) / 2);
+}
 
 class Point
 {
@@ -118,4 +128,10 @@ class Point
     }
 
     internal Point MultiplyClone(int i) => this.Clone().Multiply(i);
+
+    internal int Distance(Point u)
+    {
+        var diff = this.AddClone(u.MultiplyClone(-1));
+        return Math.Abs(diff.X) + Math.Abs(diff.Y);
+    }
 }

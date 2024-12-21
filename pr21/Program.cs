@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Net.Http.Headers;
 
 var lines = File.ReadAllLines("TextFile1.txt");
 var numeric = new[]
@@ -17,29 +18,14 @@ var result = 0;
 
 foreach (var line in lines)
 {
-    Console.WriteLine(line);
     var s1 = Dial(line, numeric);
-    Console.WriteLine(s1);
-    var s2 = Dial(s1, directional);
-    Console.WriteLine(s2);
-    var s3 = Dial(s2, directional);
-    Console.WriteLine($"{line}: {s3}");
-    //Console.WriteLine($"{s3.Length} * {int.Parse(line[..3])}");
-    result += s3.Length * int.Parse(line[..3]);
+    var s2 = s1.SelectMany(x => Dial(x, directional)).ToList();
+    var s3 = s2.SelectMany(x => Dial(x, directional)).ToList();
+    result += s3.Min(x => x.Length) * int.Parse(line[..3]);
 }
 
 Console.WriteLine(result); // 240450 too high
 
-string s;
-s = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A";
-Console.WriteLine(s);
-Console.WriteLine(Do(s));
-Console.WriteLine(Do(Do(s)));
-
-s = "v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA^<A>Av<A>^AA<A>Av<A<A>>^AAAvA^<A>A";
-Console.WriteLine(s);
-Console.WriteLine(Do(s));
-Console.WriteLine(Do(Do(s)));
 string Do(string input)
 {
     var s = "";
@@ -59,43 +45,54 @@ string Do(string input)
     return s;
 }
 
-string Dial(string line, string[] dial)
+List<string> Dial(string line, string[] dial)
 {
-    var s = "";
+    var wave = new List<string>();
+    wave.Add("");
     var pos = Find('A', dial);
-    foreach(var c in line)
+    foreach (var c in line)
     {
         var nextPos = Find(c, dial);
         var diff = nextPos.AddClone(pos.MultiplyClone(-1));
-        if (dial.Length == 4)
-        {
-            if (diff.Y < 0)
-                s += Repeat(-1 * diff.Y, '^');
-            if (diff.X < 0)
-                s += Repeat(-1 * diff.X, '<');
+        var add = "";
+        if (diff.X < 0)
+            add += Repeat(-1 * diff.X, '<');
+        if (diff.X > 0)
+            add += Repeat(diff.X, '>');
+        if (diff.Y < 0)
+            add += Repeat(-1 * diff.Y, '^');
+        if (diff.Y > 0)
+            add += Repeat(diff.Y, 'v');
 
-            if (diff.X > 0)
-                s += Repeat(diff.X, '>');
-            if (diff.Y > 0)
-                s += Repeat(diff.Y, 'v');
-        }
-        else
-        {
-            if (diff.X > 0)
-                s += Repeat(diff.X, '>');
-            if (diff.Y < 0)
-                s += Repeat(-1 * diff.Y, '^');
+        var permutations = Permutate(add).Where(x => IsCheck(dial, pos, add)).ToArray();
 
-            if (diff.Y > 0)
-                s += Repeat(diff.Y, 'v');
-            if (diff.X < 0)
-                s += Repeat(-1 * diff.X, '<');
-        }
-        s += "A";
+        wave = wave.SelectMany(x => permutations.Select(ppp => x + ppp + "A")).ToList();
 
         pos = nextPos;
     }
-    return s;
+    return wave;
+}
+
+static bool IsCheck(string[] dial, Point pos, string add)
+{
+    var checkPos = pos.Clone();
+    foreach (var ch in add)
+    {
+        checkPos.Add(Point.OrdoDirection(ch));
+        if (dial[checkPos.Y][checkPos.X] == ' ')
+            return false;
+    }
+    return true;
+}
+
+string[] Permutate(string add)
+{
+    if (add == "")
+        return new[] { "" };
+
+    var result = Enumerable.Range(0, add.Length)
+        .SelectMany(i => Permutate(add[..i] + add[(i + 1)..]).Select(x => add[i] + x));
+    return result.Distinct().ToArray();
 }
 
 string Repeat(int amount, char c) => string.Concat(Enumerable.Range(0, amount).Select(x => c));
@@ -106,6 +103,19 @@ static Point Find(char c, string[] ls)
         if (ls[i].Contains(c))
             return new Point { X = ls[i].IndexOf(c), Y = i };
     throw new Exception();
+}
+
+void Try(string[] directional)
+{
+    string s = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A";
+    Console.WriteLine(s);
+    Console.WriteLine(Do(s));
+    Console.WriteLine(Do(Do(s)));
+
+    s = "v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA^<A>Av<A>^AA<A>Av<A<A>>^AAAvA^<A>A";
+    Console.WriteLine(s);
+    Console.WriteLine(Do(s));
+    Console.WriteLine(Do(Do(s)));
 }
 
 public class Point

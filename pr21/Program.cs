@@ -17,18 +17,47 @@ var result = 0;
 
 foreach (var line in lines)
 {
-    //Console.WriteLine(line);
+    Console.WriteLine(line);
     var s1 = Dial(line, numeric);
-    //Console.WriteLine(s1);
+    Console.WriteLine(s1);
     var s2 = Dial(s1, directional);
-    //Console.WriteLine(s2);
+    Console.WriteLine(s2);
     var s3 = Dial(s2, directional);
     Console.WriteLine($"{line}: {s3}");
     //Console.WriteLine($"{s3.Length} * {int.Parse(line[..3])}");
     result += s3.Length * int.Parse(line[..3]);
 }
 
-Console.WriteLine(result);
+Console.WriteLine(result); // 240450 too high
+
+string s;
+s = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A";
+Console.WriteLine(s);
+Console.WriteLine(Do(s));
+Console.WriteLine(Do(Do(s)));
+
+s = "v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA^<A>Av<A>^AA<A>Av<A<A>>^AAAvA^<A>A";
+Console.WriteLine(s);
+Console.WriteLine(Do(s));
+Console.WriteLine(Do(Do(s)));
+string Do(string input)
+{
+    var s = "";
+    var pos = Find('A', directional);
+
+    var dialingOn = directional;
+    foreach (var c in input)
+    {
+        if (c == 'A')
+            s += dialingOn[pos.Y][pos.X];
+        else
+            pos.Add(Point.OrdoDirection(c));
+
+        if (dialingOn[pos.Y][pos.X] == ' ')
+            throw new Exception();
+    }
+    return s;
+}
 
 string Dial(string line, string[] dial)
 {
@@ -38,16 +67,30 @@ string Dial(string line, string[] dial)
     {
         var nextPos = Find(c, dial);
         var diff = nextPos.AddClone(pos.MultiplyClone(-1));
-        if (diff.Y < 0)
-            s += Repeat(-1 * diff.Y, '^');
-        if (diff.X < 0)
-            s += Repeat(-1 * diff.X, '<');
+        if (dial.Length == 4)
+        {
+            if (diff.Y < 0)
+                s += Repeat(-1 * diff.Y, '^');
+            if (diff.X < 0)
+                s += Repeat(-1 * diff.X, '<');
 
-        if (diff.X > 0)
-            s += Repeat(diff.X, '>');
-        if (diff.Y > 0)
-            s += Repeat(diff.Y, 'v');
+            if (diff.X > 0)
+                s += Repeat(diff.X, '>');
+            if (diff.Y > 0)
+                s += Repeat(diff.Y, 'v');
+        }
+        else
+        {
+            if (diff.X > 0)
+                s += Repeat(diff.X, '>');
+            if (diff.Y < 0)
+                s += Repeat(-1 * diff.Y, '^');
 
+            if (diff.Y > 0)
+                s += Repeat(diff.Y, 'v');
+            if (diff.X < 0)
+                s += Repeat(-1 * diff.X, '<');
+        }
         s += "A";
 
         pos = nextPos;
@@ -69,6 +112,8 @@ public class Point
 {
     internal int X;
     internal int Y;
+
+    internal static Point OrdoDirection(char c) => OrtoDirections["^>v<".IndexOf(c)];
 
     internal static Point[] OrtoDirections => new[]
     {

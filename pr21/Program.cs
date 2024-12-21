@@ -1,7 +1,4 @@
-﻿using System.Drawing;
-using System.Net.Http.Headers;
-
-var lines = File.ReadAllLines("TextFile1.txt");
+﻿var lines = File.ReadAllLines("TextFile1.txt");
 var numeric = new[]
 {
     "789",
@@ -14,17 +11,25 @@ var directional = new[]
     " ^A",
     "<v>",
 };
+var dictPermutate = new Dictionary<string, string[]>
+{
+    { "", new [] { "" } }
+};
+
 var result = 0;
 
 foreach (var line in lines)
 {
-    var s1 = Dial(line, numeric);
-    var s2 = s1.SelectMany(x => Dial(x, directional)).ToList();
-    var s3 = s2.SelectMany(x => Dial(x, directional)).ToList();
-    result += s3.Min(x => x.Length) * int.Parse(line[..3]);
+    Console.WriteLine(line);
+    var next = Dial(line, numeric);
+    Enumerable.Range(0, 2).ToList().ForEach(i =>
+    {
+        next = next.SelectMany(x => Dial(x, directional)).ToList();
+    });
+    result += next.Min(x => x.Length) * int.Parse(line[..3]);
 }
 
-Console.WriteLine(result); // 240450 too high
+Console.WriteLine(result);
 
 string Do(string input)
 {
@@ -64,9 +69,9 @@ List<string> Dial(string line, string[] dial)
         if (diff.Y > 0)
             add += Repeat(diff.Y, 'v');
 
-        var permutations = Permutate(add).Where(x => IsCheck(dial, pos, add)).ToArray();
+        var permutations = Permutate(add).Where(x => IsCheck(dial, pos, x)).ToArray();
 
-        wave = wave.SelectMany(x => permutations.Select(ppp => x + ppp + "A")).ToList();
+        wave = wave.SelectMany(x => permutations.Select(ppp => x + ppp + "A")).Distinct().ToList();
 
         pos = nextPos;
     }
@@ -85,15 +90,11 @@ static bool IsCheck(string[] dial, Point pos, string add)
     return true;
 }
 
-string[] Permutate(string add)
-{
-    if (add == "")
-        return new[] { "" };
-
-    var result = Enumerable.Range(0, add.Length)
-        .SelectMany(i => Permutate(add[..i] + add[(i + 1)..]).Select(x => add[i] + x));
-    return result.Distinct().ToArray();
-}
+string[] Permutate(string add) => dictPermutate.ContainsKey(add)
+    ? dictPermutate[add]
+    : dictPermutate[add] = Enumerable.Range(0, add.Length)
+        .SelectMany(i => Permutate(add[..i] + add[(i + 1)..]).Select(x => add[i] + x))
+        .Distinct().ToArray();
 
 string Repeat(int amount, char c) => string.Concat(Enumerable.Range(0, amount).Select(x => c));
 

@@ -2,27 +2,12 @@
 
 Console.WriteLine(initials.Sum(Calculate2000));
 
-var dicts = initials.Select(PrepareDict).ToArray();
+var total = new Dictionary<string, long>();
+foreach (var initial in initials)
+    FillDict(initial);
+Console.WriteLine(total.Values.Max());
 
-long result = 0;
-for (var i1 = -9; i1 < 10; i1++)
-    for (var i2 = -9; i2 < 10; i2++)
-        for (var i3 = -9; i3 < 10; i3++)
-            for (var i4 = -9; i4 < 10; i4++)
-            {
-                var key = $"{i1}{i2}{i3}{i4}";
-                var bananas = dicts.Sum(d => d.ContainsKey(key) ? d[key] : 0);
-                result = Math.Max(bananas, result);
-            }
-
-Console.WriteLine(result);
-
-long Calculate2000(long secret)
-{
-    for (int i = 0; i < 2000; i++)
-        secret = Calculate(secret);
-    return secret;
-}
+long Calculate2000(long secret) => Enumerable.Range(0, 2000).Aggregate(secret, (s, _) => Calculate(s));
 
 static long Calculate(long secret)
 {
@@ -37,13 +22,13 @@ static long Calculate(long secret)
     return secret;
 }
 
-Dictionary<string, long> PrepareDict(long secret)
+void FillDict(long secret)
 {
     var lastDigit = secret % 10;
     var diffs = new List<long>();
 
     var dict = new Dictionary<string, long>();
-    for (int i = 0; i < 2000; i++)
+    for (var i = 0; i < 2000; i++)
     {
         secret = Calculate(secret);
         
@@ -58,10 +43,15 @@ Dictionary<string, long> PrepareDict(long secret)
         {
             var key = string.Concat(diffs.Select(x => x.ToString()));
             if (!dict.ContainsKey(key))
+            {
                 dict.Add(key, nextLastDigit);
+                if (total.ContainsKey(key))
+                    total[key] += nextLastDigit;
+                else
+                    total[key] = nextLastDigit;
+            }
         }
         
         lastDigit = nextLastDigit;
     }
-    return dict;
 }

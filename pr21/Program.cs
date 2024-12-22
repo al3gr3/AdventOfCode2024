@@ -41,11 +41,11 @@ long ShortestLength(string code, int maxDepth, int curDepth)
     foreach (var c in code)
     {
         if (curDepth == maxDepth)
-            res += (FindMoves(directional, pos, c).First() + 'A').Length;
+            res += FindMoves(directional, pos, c).First().Length;
         else
         {
             var permutations = FindMoves(directional, pos, c);
-            res += permutations.Min(a => ShortestLength(a + 'A', maxDepth, curDepth + 1));
+            res += permutations.Min(a => ShortestLength(a, maxDepth, curDepth + 1));
         }
         pos = Find(c, directional);
     }
@@ -62,7 +62,7 @@ List<string> Dial(string line, string[] dial)
     {
         var permutations = FindMoves(dial, pos, c);
 
-        wave = wave.SelectMany(x => permutations.Select(ppp => x + ppp + "A")).Distinct().ToList();
+        wave = wave.SelectMany(x => permutations.Select(ppp => x + ppp)).Distinct().ToList();
 
         pos = Find(c, dial);
     }
@@ -83,7 +83,7 @@ string[] FindMoves(string[] dial, Point pos, char c)
     if (diff.Y > 0)
         add += Repeat(diff.Y, 'v');
 
-    var permutations = Permutate(add).Where(x => IsCheck(dial, pos, x)).ToArray();
+    var permutations = Permutate(add).Where(x => IsCheck(dial, pos, x)).Select(x => x + 'A').ToArray();
     return permutations;
 }
 

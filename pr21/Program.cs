@@ -15,63 +15,43 @@ var dictPermutate = new Dictionary<string, string[]>
 {
     { "", new [] { "" } }
 };
+string[] Permutate(string add) => dictPermutate.ContainsKey(add)
+    ? dictPermutate[add]
+    : dictPermutate[add] = Enumerable.Range(0, add.Length)
+        .SelectMany(i => Permutate(add[..i] + add[(i + 1)..]).Select(x => add[i] + x))
+        .Distinct().ToArray();
 
-var result = 0L;
+var cache = new Dictionary<string, long>();
 
-var dict = new Dictionary<string, long>();
-foreach (var line in lines)
-{
-    var next = Dial(line, numeric);
-    var min = next.Min(n => ShortestLength(n, 25, 1));
-    Console.WriteLine($"{line} {min}");
-    result += (min * int.Parse(line[..3]));
-}
-
-Console.WriteLine(result);
+Console.WriteLine(lines.Sum(line => ShortestLength(line, 25, 0) * int.Parse(line[..3])));
 
 long ShortestLength(string code, int maxDepth, int curDepth)
 {
     var key = $"{code}|{curDepth}";
-    if (dict.ContainsKey(key))
-        return dict[key];
+    if (cache.ContainsKey(key))
+        return cache[key];
+
+    if (curDepth > maxDepth)
+        return cache[key] = code.Length;
 
     var res = 0L;
-
-    var pos = Find('A', directional);
+    var currentPad = curDepth == 0 ? numeric : directional;
+    var pos = Find('A', currentPad);
     foreach (var c in code)
     {
-        if (curDepth == maxDepth)
-            res += FindMoves(directional, pos, c).First().Length;
-        else
-        {
-            var permutations = FindMoves(directional, pos, c);
-            res += permutations.Min(a => ShortestLength(a, maxDepth, curDepth + 1));
-        }
-        pos = Find(c, directional);
+        var nextPos = Find(c, currentPad);
+        var possibleMoves = FindMoves(currentPad, pos, nextPos);
+
+        res += possibleMoves.Min(a => ShortestLength(a, maxDepth, curDepth + 1));
+
+        pos = nextPos;
     }
 
-    return dict[key] = res;
+    return cache[key] = res;
 }
 
-List<string> Dial(string line, string[] dial)
+string[] FindMoves(string[] dial, Point pos, Point nextPos)
 {
-    var wave = new List<string>();
-    wave.Add("");
-    var pos = Find('A', dial);
-    foreach (var c in line)
-    {
-        var permutations = FindMoves(dial, pos, c);
-
-        wave = wave.SelectMany(x => permutations.Select(ppp => x + ppp)).Distinct().ToList();
-
-        pos = Find(c, dial);
-    }
-    return wave;
-}
-
-string[] FindMoves(string[] dial, Point pos, char c)
-{
-    var nextPos = Find(c, dial);
     var diff = nextPos.AddClone(pos.MultiplyClone(-1));
     var add = "";
     if (diff.X < 0)
@@ -83,11 +63,11 @@ string[] FindMoves(string[] dial, Point pos, char c)
     if (diff.Y > 0)
         add += Repeat(diff.Y, 'v');
 
-    var permutations = Permutate(add).Where(x => IsCheck(dial, pos, x)).Select(x => x + 'A').ToArray();
+    var permutations = Permutate(add).Where(x => IsPathOk(dial, pos, x)).Select(x => x + 'A').ToArray();
     return permutations;
 }
 
-static bool IsCheck(string[] dial, Point pos, string add)
+static bool IsPathOk(string[] dial, Point pos, string add)
 {
     var checkPos = pos.Clone();
     foreach (var ch in add)
@@ -99,13 +79,7 @@ static bool IsCheck(string[] dial, Point pos, string add)
     return true;
 }
 
-string[] Permutate(string add) => dictPermutate.ContainsKey(add)
-    ? dictPermutate[add]
-    : dictPermutate[add] = Enumerable.Range(0, add.Length)
-        .SelectMany(i => Permutate(add[..i] + add[(i + 1)..]).Select(x => add[i] + x))
-        .Distinct().ToArray();
-
-string Repeat(int amount, char c) => string.Concat(Enumerable.Range(0, amount).Select(x => c));
+static string Repeat(int amount, char c) => string.Concat(Enumerable.Range(0, amount).Select(x => c));
 
 static Point Find(char c, string[] ls)
 {

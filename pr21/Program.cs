@@ -25,8 +25,8 @@ foreach (var line in lines)
     Enumerable.Range(0, 25).ToList().ForEach(i =>
     {
         next = next.SelectMany(x => Dial(x, directional)).ToList();
-        var minLength = next.Min(x => x.Length);
-        next = next.Where(x => x.Length == minLength).ToList();
+        //var minLength = next.Min(x => x.Length);
+        //next = next.Where(x => x.Length == minLength).ToList();
     });
     result += next.Min(x => x.Length) * int.Parse(line[..3]);
 }

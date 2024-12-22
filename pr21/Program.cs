@@ -22,9 +22,11 @@ foreach (var line in lines)
 {
     Console.WriteLine(line);
     var next = Dial(line, numeric);
-    Enumerable.Range(0, 2).ToList().ForEach(i =>
+    Enumerable.Range(0, 25).ToList().ForEach(i =>
     {
         next = next.SelectMany(x => Dial(x, directional)).ToList();
+        var minLength = next.Min(x => x.Length);
+        next = next.Where(x => x.Length == minLength).ToList();
     });
     result += next.Min(x => x.Length) * int.Parse(line[..3]);
 }
@@ -90,11 +92,16 @@ static bool IsCheck(string[] dial, Point pos, string add)
     return true;
 }
 
-string[] Permutate(string add) => dictPermutate.ContainsKey(add)
-    ? dictPermutate[add]
-    : dictPermutate[add] = Enumerable.Range(0, add.Length)
-        .SelectMany(i => Permutate(add[..i] + add[(i + 1)..]).Select(x => add[i] + x))
-        .Distinct().ToArray();
+string[] Permutate(string add)
+{
+    var key = string.Concat(add.OrderBy(x => x));
+
+    return dictPermutate.ContainsKey(key)
+        ? dictPermutate[key]
+        : dictPermutate[key] = Enumerable.Range(0, key.Length)
+            .SelectMany(i => Permutate(key[..i] + key[(i + 1)..]).Select(x => key[i] + x))
+            .Distinct().ToArray();
+}
 
 string Repeat(int amount, char c) => string.Concat(Enumerable.Range(0, amount).Select(x => c));
 

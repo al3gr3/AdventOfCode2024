@@ -22,10 +22,12 @@ var dict = new Dictionary<string, long>();
 foreach (var line in lines)
 {
     var next = Dial(line, numeric);
-    var min = next.Min(n => ShortestLength(n, 2, 1));
+    var min = next.Min(n => ShortestLength(n, 25, 1));
     Console.WriteLine($"{line} {min}");
     result += (min * int.Parse(line[..3]));
 }
+
+Console.WriteLine(result);
 
 long ShortestLength(string code, int maxDepth, int curDepth)
 {
@@ -39,38 +41,16 @@ long ShortestLength(string code, int maxDepth, int curDepth)
     foreach (var c in code)
     {
         if (curDepth == maxDepth)
-            res += Dial(c.ToString(), directional).First().Length;
+            res += (FindMoves(directional, pos, c).First() + 'A').Length;
         else
         {
             var permutations = FindMoves(directional, pos, c);
-            res += permutations.Min(a => ShortestLength(a, maxDepth, curDepth + 1));
+            res += permutations.Min(a => ShortestLength(a + 'A', maxDepth, curDepth + 1));
         }
         pos = Find(c, directional);
     }
 
-    dict[key] = res;
-    return res;
-}
-
-Console.WriteLine(result);
-
-string Do(string input)
-{
-    var s = "";
-    var pos = Find('A', directional);
-
-    var dialingOn = directional;
-    foreach (var c in input)
-    {
-        if (c == 'A')
-            s += dialingOn[pos.Y][pos.X];
-        else
-            pos.Add(Point.OrdoDirection(c));
-
-        if (dialingOn[pos.Y][pos.X] == ' ')
-            throw new Exception();
-    }
-    return s;
+    return dict[key] = res;
 }
 
 List<string> Dial(string line, string[] dial)
@@ -133,19 +113,6 @@ static Point Find(char c, string[] ls)
         if (ls[i].Contains(c))
             return new Point { X = ls[i].IndexOf(c), Y = i };
     throw new Exception();
-}
-
-void Try(string[] directional)
-{
-    string s = "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A";
-    Console.WriteLine(s);
-    Console.WriteLine(Do(s));
-    Console.WriteLine(Do(Do(s)));
-
-    s = "v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA^<A>Av<A>^AA<A>Av<A<A>>^AAAvA^<A>A";
-    Console.WriteLine(s);
-    Console.WriteLine(Do(s));
-    Console.WriteLine(Do(Do(s)));
 }
 
 public class Point

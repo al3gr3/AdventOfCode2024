@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-var lines = File.ReadAllLines("TextFile1.txt").Select(x => x.Split('-').Order().ToArray());
+﻿var lines = File.ReadAllLines("TextFile1.txt").Select(x => x.Split('-').Order().ToArray());
 var dict = new Dictionary<string, List<string>>();
 
 void Add(string key, string val)
@@ -17,30 +15,10 @@ foreach (var line in lines)
     Add(line[1], line[0]);
 }
 foreach (var key in dict.Keys)
-{
-    //dict[key].Add(key);
     dict[key] = dict[key].Order().ToList();
-}
 
-var count = dict.Values.Max(x => x.Count);
-var keys = dict.Keys.Where(k => dict[k].Count >= count).ToArray();
-//var possibles = keys.Select(key => string.Join(',', dict[key])).Order().ToList();
-//foreach (var p in possibles)
-//{
-//    Console.WriteLine(p);
-//}
 var CBC = 0;
 clique(dict.Keys.ToList(), 0);
-Console.WriteLine(CBC);
-
-var cliq = "av,ay,cu,fw,in,mn,ob,pn,re,tj,wa".Split(',');
-foreach(var s in cliq)
-{
-    var inter = dict[s].Intersect(cliq).ToList();
-    inter.Add(s);
-
-    Console.WriteLine($"{s}: {string.Join(',', inter.Order())}");
-}
 
 void clique(List<string> V, int depth)
 {
@@ -52,7 +30,7 @@ void clique(List<string> V, int depth)
     }
 
     var i = 0;
-    while (i < V.Count - 1)
+    while (i < V.Count)
     {
         if (depth + V.Count - i <= CBC)
             return;
@@ -63,14 +41,15 @@ void clique(List<string> V, int depth)
             var j = V.IndexOf(vj);
             if (j > -1)
                 j++;
-            return j > i && j <= V.Count;
+            return j > (i) && j <= V.Count;
         }).ToList();
         var before = CBC;
+        //  clique (N(vi) | ∀vj : j > i, j ≤ |V|, depth + 1)
         clique(nextV, depth + 1);
-        if (CBC > before)
+        if (CBC > before && depth == 0)
         {
             nextV.Add(V[i - 1]);
-            Console.WriteLine($"{string.Join(',', nextV.Order())} {CBC}");
+            Console.WriteLine($"{string.Join(',', nextV.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase))} {CBC}");
         }
     }
 }
@@ -108,4 +87,18 @@ void First()
         return thirds.Select(x => string.Concat(new[] { two[0], x, two[1] }.Order()));
     }).ToList();
     Console.WriteLine(threes.Count(x => x[0] == 't' || x[2] == 't' || x[4] == 't'));
+}
+
+void Test()
+{
+    Console.WriteLine(string.Join(',', new[] { "z", "v" }.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase)));
+
+    var cliq = "cl,ei,fd,hc,ib,kq,kv,ky,rv,vf,wk,yx,zf".Split(',');
+    foreach (var s in cliq)
+    {
+        var inter = dict[s].Intersect(cliq).ToList();
+        inter.Add(s);
+
+        Console.WriteLine($"{s}: {string.Join(',', inter.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase))}");
+    }
 }

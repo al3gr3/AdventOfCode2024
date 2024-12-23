@@ -54,30 +54,6 @@ void clique(List<string> V, int depth)
     }
 }
 
-/*
-function Main
- CBC := 0 // the maximum clique’s size
- clique (V, 0)
- return
-end function
-function clique(V, depth)
- if’|V| = 0 then
- if depth > CBC then
- New record - save it. CBC := depth
- end if
- return
- end if
- i := 0
- while i < |V| do
- if depth + |V| - i ≤ CBC then return // prune
- i := i + 1
- // form a new depth. N(vi) denotes a neighbourhood of vi.
- clique (N(vi) | ∀vj : j > i, j ≤ |V|, depth + 1)
- end while
- return
-end function
-*/
-
 void First()
 {
     var threes = lines.SelectMany(two =>

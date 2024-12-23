@@ -18,7 +18,10 @@ foreach (var key in dict.Keys)
     dict[key] = dict[key].Order().ToList();
 
 var CBC = 0;
+var maxStr = "";
 clique(dict.Keys.ToList(), 0);
+Console.WriteLine($"{maxStr} {CBC}");
+Test(maxStr);
 
 void clique(List<string> V, int depth)
 {
@@ -34,23 +37,18 @@ void clique(List<string> V, int depth)
     {
         if (depth + V.Count - i <= CBC)
             return;
-        i++;
-        var Nvi = dict[V[i - 1]];
-        var nextV = Nvi.Where(vj =>
-        {
-            var j = V.IndexOf(vj);
-            if (j > -1)
-                j++;
-            return j > (i) && j <= V.Count;
-        }).ToList();
+        
+        var Nvi = dict[V[i]]; // neighborhood of Vi
+        var nextV = Nvi.Where(vj => V.IndexOf(vj) > i).ToList();
         var before = CBC;
-        //  clique (N(vi) | ∀vj : j > i, j ≤ |V|, depth + 1)
         clique(nextV, depth + 1);
         if (CBC > before && depth == 0)
         {
-            nextV.Add(V[i - 1]);
-            Console.WriteLine($"{string.Join(',', nextV.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase))} {CBC}");
+            var t = Nvi.ToList();
+            t.Add(V[i]);
+            maxStr = $"{string.Join(',', t.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase))}";
         }
+        i++;
     }
 }
 
@@ -65,11 +63,11 @@ void First()
     Console.WriteLine(threes.Count(x => x[0] == 't' || x[2] == 't' || x[4] == 't'));
 }
 
-void Test()
+void Test(string maxStr)
 {
-    Console.WriteLine(string.Join(',', new[] { "z", "v" }.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase)));
+    //Console.WriteLine(string.Join(',', new[] { "z", "v" }.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase)));
 
-    var cliq = "cl,ei,fd,hc,ib,kq,kv,ky,rv,vf,wk,yx,zf".Split(',');
+    var cliq = maxStr.Split(',');
     foreach (var s in cliq)
     {
         var inter = dict[s].Intersect(cliq).ToList();

@@ -41,7 +41,7 @@ foreach (var line in lines)
     }
 }
 
-bool IsOkZ(int depth, string reg)
+bool IsOk(int depth, string reg)
 {
     var iStr = Format2Digits(depth);
 
@@ -63,27 +63,75 @@ bool IsOkZ(int depth, string reg)
 
     if (remaining.Length != 1)
     {
-        Console.WriteLine("{iStr}: xyXor output is not in zXor.Wires");
+        Console.WriteLine($"{iStr}: xyXor output is not in zXor.Wires");
         return false;
     }
-    var xorXor = gates.FirstOrDefault(x => x.Operation == "XOR" && zXor.Wires.Contains(x.Output));
+    
+    var or = gates.FirstOrDefault(x => x.Operation == "OR" && remaining.Contains(x.Output));
+    if (or == null)
+    {
+        Console.WriteLine($"{iStr}: or is null");
+        return false;
+    }
+
+
+    return true;
 
 }
-First();
-Test("z05");
+//First();
+//Test("z05");
 
-for (var i = 2; i < 40; i++)
+
+
+gates.Where(x => x.Operation == "OR" && isSpecial(x.Wires[0]) && isSpecial(x.Wires[1])).ToList().ForEach(x => { Console.WriteLine(x.Output); });
+
+static bool isSpecial(string s)
 {
-    var iStr = Format2Digits(i);
-    var result = IsOkZ(i, $"z{iStr}");
+    return s.StartsWith('x') || s.StartsWith('y') || s.StartsWith('z');
+}
 
-    
-    
-    if (ZXor == null)
-        Console.WriteLine($"{iStr}: Zxor is null");
-    var xyXor = gates.FirstOrDefault(x => x.Operation == "XOR" && x.Wires[0] == $"x{iStr}" && x.Wires[1] == $"y{iStr}");
-    if (xyXor == null)
-        Console.WriteLine($"{iStr}: xyXor is null");
+var arr = new
+[]
+{
+    "hnd",
+    "z09",
+
+    "tdv",
+    "z16",
+
+
+    "bks",
+    "z23",
+
+    "tjp",
+    "nrn",
+};
+Console.WriteLine(string.Join(',', arr.OrderBy(x => x, StringComparer.InvariantCultureIgnoreCase)));
+
+var orName = "rqf";
+var xorName = "rjt";
+for (var i = 3; i < 52; i++)
+{    
+    var iStr = Format2Digits(i);
+    IsOk(i, $"z{iStr}");
+    var iprevStr = Format2Digits(i - 1);
+
+    var z = gates.FirstOrDefault(x => x.Operation == "XOR" && x.Wires.Contains(orName) && x.Wires.Contains(xorName) && x.Output == $"z{iprevStr}");
+    if (z == null)
+        throw new Exception();
+
+    var and1 = gates.FirstOrDefault(x => x.Operation == "AND" && x.Wires.Contains(orName) && x.Wires.Contains(xorName));
+    if (and1 == null || and1.Output.StartsWith('z'))
+        throw new Exception();
+    var and2 = gates.FirstOrDefault(x => x.Operation == "AND" && x.Wires[0] == $"x{iprevStr}" && x.Wires[1] == $"y{iprevStr}");
+    if (and2 == null || and2.Output.StartsWith('z'))
+        throw new Exception();
+
+    var or = gates.FirstOrDefault(x => x.Operation == "OR" && x.Wires.Contains(and2.Output) && x.Wires.Contains(and1.Output));
+    var xor = gates.FirstOrDefault(x => x.Operation == "XOR" && x.Wires[0] == $"x{iStr}" && x.Wires[1] == $"y{iStr}");
+
+    orName = or.Output;
+    xorName = xor.Output;
 }
 static string Repeat(int amount, char c) => string.Concat(Enumerable.Range(0, amount).Select(x => c));
 
@@ -102,6 +150,8 @@ void First()
     var result = Count('z');
     Console.WriteLine(result);
 }
+
+
 
 long Count(char c) => dict.Keys.Where(k => k.StartsWith(c)).Order().Reverse().Aggregate(0L, (s, n) => s * 2 + dict[n].Value);
 

@@ -99,7 +99,6 @@ var arr = new
     "tdv",
     "z16",
 
-
     "bks",
     "z23",
 
@@ -118,7 +117,11 @@ for (var i = 3; i < 52; i++)
 
     var z = gates.FirstOrDefault(x => x.Operation == "XOR" && x.Wires.Contains(orName) && x.Wires.Contains(xorName) && x.Output == $"z{iprevStr}");
     if (z == null)
+    {
+        var xorTemp = gates.FirstOrDefault(x => x.Operation == "XOR" && x.Wires.Contains(orName) && x.Wires.Contains(xorName))?.Output;
+        Console.WriteLine(xorTemp);
         throw new Exception();
+    }
 
     var and1 = gates.FirstOrDefault(x => x.Operation == "AND" && x.Wires.Contains(orName) && x.Wires.Contains(xorName));
     if (and1 == null || and1.Output.StartsWith('z'))
@@ -150,8 +153,6 @@ void First()
     var result = Count('z');
     Console.WriteLine(result);
 }
-
-
 
 long Count(char c) => dict.Keys.Where(k => k.StartsWith(c)).Order().Reverse().Aggregate(0L, (s, n) => s * 2 + dict[n].Value);
 

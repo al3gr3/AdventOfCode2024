@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,9 +9,13 @@
 
   <ItemGroup>
     <None Remove="TextFile1.txt" />
+    <None Remove="TextFile1_fixed.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="TextFile1_fixed.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TextFile1.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
